@@ -67,16 +67,50 @@ def run_command(command: list[str], cwd: str) -> dict:
         }
 
 def read_file(path: str, repo_path: str) -> str:
-    pass
+    
+    target = ensure_within_repo(path, repo_path)
+     
+    if not target.exists():
+        raise FileNotFoundError(f"File '{path}' does not exist in the repository")
+    if not target.is_file():
+        raise IsADirectoryError(f"Path '{path}' is not a file")
+    
+    return target.read_text(encoding="utf-8")
+    
 
 
 def write_file(path: str, content: str, repo_path: str) -> None:
-    pass
 
+    target = ensure_within_repo(path, repo_path)
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+
+    target.write_text(content, encoding="utf-8")
+
+    
 
 def list_files(repo_path: str) -> list[str]:
-    pass
+
+    repo = Path(repo_path).resolve()
+
+    if not repo.exists():
+        raise FileNotFoundError(f"Repository path '{repo_path}' does not exist")
+    if not repo.is_dir():
+        raise NotADirectoryError(f"Repository path '{repo_path}' is not a directory")
+    
+    return sorted([str(f.relative_to(repo)) for f in repo.rglob("*") if f.is_file()])
+
+    
 
 
 def search_in_files(repo_path: str, query: str) -> list[str]:
-    pass
+    all_files = list_files(repo_path)
+    matches = []
+    for file in all_files:
+        try:
+            content = read_file(file, repo_path)
+            if query in content:
+                matches.append(file)
+        except Exception:
+            continue
+    return matches
