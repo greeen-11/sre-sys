@@ -17,3 +17,5 @@ class AgentState(TypedDict):
     dashboard_events: List[dict[str, Any]]  # events for the UI
     run_history: List[dict[str, Any]]       # log of all attempts
     final_status: str            # "success", "failed", "aborted"
+    file_contents: dict[str, str]   # filename → file content
+
